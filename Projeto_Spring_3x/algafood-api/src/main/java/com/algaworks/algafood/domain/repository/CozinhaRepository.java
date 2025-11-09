@@ -1,0 +1,15 @@
+package com.algaworks.algafood.domain.repository;
+
+import com.algaworks.algafood.domain.model.Cozinha;
+
+import java.util.List;
+import java.util.UUID;
+
+public interface CozinhaRepository {
+
+    List<Cozinha> listar();
+    Cozinha buscar(UUID id);
+    Cozinha salvar(Cozinha cozinha);
+    void remover(Cozinha cozinha);
+
+}
