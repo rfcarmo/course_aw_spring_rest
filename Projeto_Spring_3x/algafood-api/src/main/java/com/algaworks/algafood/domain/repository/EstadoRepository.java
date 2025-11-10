@@ -1,15 +1,9 @@
 package com.algaworks.algafood.domain.repository;
 
 import com.algaworks.algafood.domain.model.Estado;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.List;
 import java.util.UUID;
 
-public interface EstadoRepository {
-
-    List<Estado> listar();
-    Estado buscar(UUID id);
-    Estado salvar(Estado estado);
-    void remover(UUID id);
-
+public interface EstadoRepository extends JpaRepository<Estado, UUID> {
 }
