@@ -10,6 +10,6 @@ public interface CidadeRepository {
     List<Cidade> listar();
     Cidade buscar(UUID id);
     Cidade salvar(Cidade cidade);
-    void remover(Cidade cidade);
+    void remover(UUID id);
 
 }

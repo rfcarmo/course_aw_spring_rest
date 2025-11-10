@@ -10,6 +10,6 @@ public interface EstadoRepository {
     List<Estado> listar();
     Estado buscar(UUID id);
     Estado salvar(Estado estado);
-    void remover(Estado estado);
+    void remover(UUID id);
 
 }

@@ -10,6 +10,6 @@ public interface RestauranteRepository {
     List<Restaurante> listar();
     Restaurante buscar(UUID id);
     Restaurante salvar(Restaurante restaurante);
-    void remover(Restaurante restaurante);
+    void remover(UUID id);
 
 }
