@@ -41,6 +41,35 @@ public class CozinhaController {
         return ResponseEntity.status(HttpStatus.OK).body(cozinha.get());
     }
 
+    @GetMapping("/por-nome")
+    public ResponseEntity<List<Cozinha>> buscarPorNome(@RequestParam String nome) {
+        List<Cozinha> cozinhas = cozinhaRepository.findAllByNome(nome);
+
+        if (cozinhas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(cozinhas);
+    }
+
+    @GetMapping("/por-nome-like")
+    public ResponseEntity<List<Cozinha>> buscarPorNomeLike(@RequestParam String nome) {
+        List<Cozinha> cozinhas = cozinhaRepository.findAllByNomeContaining(nome);
+
+        if (cozinhas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(cozinhas);
+    }
+
+    @GetMapping("/exists-nome")
+    public ResponseEntity<?> buscarSeExistePorNome(@RequestParam String nome) {
+        boolean existe = cozinhaRepository.existsByNome(nome);
+
+        return ResponseEntity.status(HttpStatus.OK).body(existe);
+    }
+
     @PostMapping
     public ResponseEntity<Cozinha> adicionar(@RequestBody Cozinha cozinha) {
         Cozinha cozinhaNova = cadastroCozinhaService.salvar(cozinha);

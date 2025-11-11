@@ -1,0 +1,126 @@
+Q:
+Em uma projeto de desenvolvimento de rest api, utilizando java 21, spring boot 3.5.x e jpa, quando queremos criar consultas
+complexas a base de dados, qual a melhor abordagem tecnológica? Seria utilizando jpql, criteria ou há algo mais novo e
+melhor para ser utilizado?
+
+A:
+Resumo curto (recomendação):
+
+* Para a maioria dos casos: Spring Data JPA + JPQL/@Query (para consultas claras) combinado com Spring Data Specifications (ou Querydsl) para filtros dinâmicos e DTO projections para evitar carregar entidades completas.
+* Se precisar de consultas SQL muito complexas, funções específicas do banco, window functions, ou máximo controle de desempenho: use jOOQ (ou native SQL) em vez de tentar forçar tudo no JPA Criteria.
+* Evite usar diretamente a JPA Criteria API pura para tudo — é muito verbosa; use-a somente quando for inevitável ou por infra legada.
+
+Opções detalhadas
+
+1. JPQL / Spring Data @Query
+Quando usar: consultas relativamente complexas mas estáticas (joins, agrupamentos, subqueries simples).
+Vantagens: legível, fácil de escrever e manter; integrado ao Spring Data; suporta constructor-expressions para mapear DTOs.
+Contras: menos fácil para filtros dinâmicos grandes; limitada a funcionalidades portáveis do JPQL (não todas as features SQL específicas do SGDB).
+
+Exemplo (DTO projection via constructor expression):
+
+Java
+@Query("SELECT new com.example.dto.UserDto(u.id, u.name, COUNT(p)) " +
+       "FROM User u LEFT JOIN u.posts p " +
+       "WHERE u.active = true GROUP BY u.id, u.name")
+List<UserDto> findActiveUsersWithPostCount();
+
+
+
+2. JPA Criteria API (CriteriaBuilder / CriteriaQuery)
+Quando usar: construção dinâmica de consultas baseada em condições variáveis (gerado programaticamente).
+Vantagens: tipo-safe (sem strings), faz parte da especificação JPA.
+Contras: muito verbosa e difícil de ler/manter; código tende a ficar complexo rapidamente.
+Observação: Spring Data Specifications usam Criteria por baixo, então você obtém dinâmica sem ficar escrevendo Criteria cru o tempo todo.
+
+Trecho rápido (ilustrativo):
+
+Java
+CriteriaBuilder cb = em.getCriteriaBuilder();
+CriteriaQuery<User> q = cb.createQuery(User.class);
+Root<User> root = q.from(User.class);
+List<Predicate> predicates = new ArrayList<>();
+if (name != null) predicates.add(cb.equal(root.get("name"), name));
+q.where(predicates.toArray(new Predicate[0]));
+
+
+
+3. Spring Data Specifications
+Quando usar: filtros/dinâmicas complexas originadas por parâmetros (ex.: APIs com muitos parâmetros de pesquisa).
+Vantagens: compõe filtros (and/or), bem integrado ao Spring Data; menos boilerplate que Criteria.
+Contras: ainda depende de Criteria internamente; para queries muito complexas (window, CTEs, funções específicas) não resolve.
+
+Exemplo:
+
+Java
+Specification<User> spec = Specification.where(UserSpecs.isActive())
+                                       .and(UserSpecs.hasName(name));
+userRepository.findAll(spec, pageable);
+
+
+
+4. Querydsl
+Quando usar: quer uma API fluente, tipo-safe e legível para construir consultas JPA dinamicamente.
+Vantagens: muito mais legível que Criteria, tipo-safe, bom suporte a consultas dinâmicas.
+Contras: necessidade de gerar classes Q* (build step); manutenção do projeto Querydsl (a biblioteca ainda é usada, mas verifique compatibilidade com versões do Hibernate/JDK); curva extra de setup.
+Bom meio-termo entre Criteria e jOOQ se você quer manter JPA + Entities.
+
+Exemplo:
+
+Java
+JPAQueryFactory q = new JPAQueryFactory(em);
+QUser u = QUser.user;
+List<User> users = q.selectFrom(u)
+                    .where(u.active.isTrue().and(u.name.eq(name)))
+                    .fetch();
+
+
+
+5. jOOQ
+Quando usar: queries SQL complexas, necessidade de uso intensivo de SQL (CTEs, window functions, hints), e/ou otimização de performance a nível SQL.
+Vantagens: gera SQL tipo-safe, excelente controle, muito bom para queries complexas e tuning; fetch direto para DTOs; ótimo para equipes com domínio de SQL.
+Contras: quebra o "pure JPA" (você usa outra API), pode haver custos de licença para edições comerciais se quiser features avançadas; remodela o modo de trabalho (mas muitos times preferem jOOQ para read-heavy areas).
+Recomendação: use jOOQ para consultas de leitura complexas e de alto desempenho; continue usando JPA para o mapeamento de entidades e escrita quando quiser.
+
+Exemplo jOOQ (ilustrativo):
+
+Java
+Result<Record> r = dsl.select(USER.ID, USER.NAME, count(POST.ID))
+                      .from(USER.leftJoin(POST).on(POST.USER_ID.eq(USER.ID)))
+                      .groupBy(USER.ID)
+                      .fetch();
+List<UserDto> dtos = r.into(UserDto.class);
+
+
+
+6. Native SQL + DTO mapping
+Quando usar: casos pontuais onde JPQL/jOOQ não resolvem; usar EntityManager.createNativeQuery ou Spring JdbcTemplate.
+Vantagens: total controle do SQL; desempenho e flexibilidade.
+Contras: perda de portabilidade e de abstração do JPA; cuidado com SQL injection, mapeamento manual.
+
+
+
+Outras ferramentas e padrões a considerar
+
+Blaze-Persistence Entity-Views: ótima para mapear entidades complexas para DTOs de forma eficiente e tipada, especialmente em consultas com agregação e join fetch.
+Projections (Spring Data) e constructor-expressions: evitar carregar entidades quando só precisa de dados (melhor performance).
+Entity Graphs e fetch joins (Hibernate/JPA) para evitar N+1.
+Libraries para filtros dinâmicos RSQL/Specification builders (por ex. spring-data-rest rsql) para construir filtros via query string.
+
+
+
+Como avaliar e escolher na prática
+
+Se as consultas são majoritariamente estáticas e portáveis: JPQL/@Query + DTO projections.
+Se você precisa de filtros dinâmicos (vários parâmetros combináveis): Spring Data Specifications ou Querydsl.
+Se precisar de SQL avançado (CTE, window functions, funções do SGDB) ou otimização: jOOQ ou native SQL.
+Se a verbosidade do Criteria te incomoda e você quer type-safety: Querydsl é boa opção.
+Se performance e controle do SQL são críticos em muitas consultas: investir em jOOQ compensa.
+
+
+
+Sugestão de caminho pragmático
+
+Comece com Spring Data JPA + JPQL/@Query + DTO projections + Specifications para filtros dinâmicos.
+Quando uma ou duas consultas se tornarem "problemáticas" (legibilidade, performance ou necessidade de SQL específico), extraia essas consultas para jOOQ ou SQL nativo e documente a justificativa.
+Se o projeto tiver muitas consultas dinâmicas complexas, avalie migrar para Querydsl (se quiser ficar no universo JPA) ou jOOQ (se quiser controle SQL). Considere também Blaze-Persistence para views/DTOs se precisar.
