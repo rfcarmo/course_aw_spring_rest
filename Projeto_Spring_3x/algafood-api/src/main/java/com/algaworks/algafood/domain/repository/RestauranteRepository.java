@@ -14,6 +14,9 @@ import java.util.UUID;
 public interface RestauranteRepository extends JpaRepository<Restaurante, UUID>, RestauranteRepositoryQueries,
         JpaSpecificationExecutor<Restaurante> {
 
+    @Query("from Restaurante r join fetch r.cozinha left join fetch r.formasPagamento")
+    List<Restaurante> findAll();
+
     List<Restaurante> findByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);
 
     List<Restaurante> findByNomeContainingAndCozinhaId(String nome, UUID cozinhaId);
