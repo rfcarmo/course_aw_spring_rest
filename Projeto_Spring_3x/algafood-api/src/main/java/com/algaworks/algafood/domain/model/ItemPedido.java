@@ -1,7 +1,10 @@
 package com.algaworks.algafood.domain.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
 import java.math.BigDecimal;
@@ -12,7 +15,7 @@ import java.util.UUID;
 @Setter
 @RequiredArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class Produto {
+public class ItemPedido {
 
     @Id
     @EqualsAndHashCode.Include
@@ -21,19 +24,22 @@ public class Produto {
     private UUID id;
 
     @Column(nullable = false)
-    private String nome;
+    private Integer quantidade;
 
     @Column(nullable = false)
-    private String descricao;
+    private BigDecimal precoUnitario;
 
     @Column(nullable = false)
-    private BigDecimal preco;
+    private BigDecimal precoTotal;
 
-    @Column(nullable = false)
-    private Boolean ativo;
+    private String observacao;
 
     @ManyToOne
     @JoinColumn(nullable = false)
-    private Restaurante restaurante;
+    private Produto produto;
+
+    @ManyToOne
+    @JoinColumn(nullable = false)
+    private Pedido pedido;
 
 }
