@@ -1,7 +1,7 @@
 package com.algaworks.algafood.api.controller;
 
-import com.algaworks.algafood.domain.exception.EntityInUseException;
-import com.algaworks.algafood.domain.exception.EntityNotFoundException;
+import com.algaworks.algafood.domain.exception.CozinhaNotFoundException;
+import com.algaworks.algafood.domain.exception.ErrorMessages;
 import com.algaworks.algafood.domain.model.Cozinha;
 import com.algaworks.algafood.domain.repository.CozinhaRepository;
 import com.algaworks.algafood.domain.service.CadastroCozinhaService;
@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -31,34 +30,22 @@ public class CozinhaController {
     }
 
     @GetMapping("/{cozinhaId}")
-    public ResponseEntity<Cozinha> buscar(@PathVariable("cozinhaId") UUID id) {
-        Optional<Cozinha> cozinha = cozinhaRepository.findById(id);
-
-        if (cozinha.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(cozinha.get());
+    public Cozinha buscar(@PathVariable("cozinhaId") UUID id) {
+        return cadastroCozinhaService.buscarOuFalhar(id);
     }
 
     @GetMapping("/por-nome")
     public ResponseEntity<List<Cozinha>> buscarPorNome(@RequestParam String nome) {
-        List<Cozinha> cozinhas = cozinhaRepository.findAllByNome(nome);
-
-        if (cozinhas.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        List<Cozinha> cozinhas = cozinhaRepository.findAllByNome(nome)
+                .orElseThrow(() -> new CozinhaNotFoundException(ErrorMessages.VALIDATION_ERROR_COZINHA_NAO_ENCONTRADA_POR_NOME));
 
         return ResponseEntity.status(HttpStatus.OK).body(cozinhas);
     }
 
     @GetMapping("/por-nome-like")
     public ResponseEntity<List<Cozinha>> buscarPorNomeLike(@RequestParam String nome) {
-        List<Cozinha> cozinhas = cozinhaRepository.findAllByNomeContaining(nome);
-
-        if (cozinhas.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        List<Cozinha> cozinhas = cozinhaRepository.findAllByNomeContaining(nome)
+                .orElseThrow(() -> new CozinhaNotFoundException(ErrorMessages.VALIDATION_ERROR_COZINHA_NAO_ENCONTRADA_POR_NOME));
 
         return ResponseEntity.status(HttpStatus.OK).body(cozinhas);
     }
@@ -79,35 +66,19 @@ public class CozinhaController {
 
     @PutMapping("/{cozinhaId}")
     public ResponseEntity<Cozinha> atualizar(@PathVariable("cozinhaId") UUID id, @RequestBody Cozinha cozinha) {
-        Optional<Cozinha> cozinhaAtual = cozinhaRepository.findById(id);
+        Cozinha cozinhaAtual = cadastroCozinhaService.buscarOuFalhar(id);
 
-        if (cozinhaAtual.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        BeanUtils.copyProperties(cozinha, cozinhaAtual, "id");
 
-        BeanUtils.copyProperties(cozinha, cozinhaAtual.get(), "id");
-
-        Cozinha cozinhaAtualizada = cadastroCozinhaService.salvar(cozinhaAtual.get());
+        Cozinha cozinhaAtualizada = cadastroCozinhaService.salvar(cozinhaAtual);
 
         return ResponseEntity.status(HttpStatus.OK).body(cozinhaAtualizada);
     }
 
     @DeleteMapping("/{cozinhaId}")
-    public ResponseEntity<String> remover(@PathVariable("cozinhaId") UUID id) {
-        try {
-            Optional<Cozinha> cozinhaAtual = cozinhaRepository.findById(id);
-
-            if (cozinhaAtual.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            cadastroCozinhaService.excluir(id);
-
-            return ResponseEntity.noContent().build();
-
-        } catch (EntityInUseException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable("cozinhaId") UUID id) {
+        cadastroCozinhaService.excluir(id);
     }
 
 }

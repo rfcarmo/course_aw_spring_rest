@@ -18,10 +18,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class RestauranteRepositoryImpl implements RestauranteRepositoryQueries {
@@ -34,7 +31,7 @@ public class RestauranteRepositoryImpl implements RestauranteRepositoryQueries {
     private RestauranteRepository restauranteRepository;
 
     @Override
-    public List<Restaurante> find(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
+    public Optional<List<Restaurante>> find(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
         Map<String, Object> parametros = new HashMap<>();
 
         StringBuilder jpql = new StringBuilder();
@@ -59,11 +56,11 @@ public class RestauranteRepositoryImpl implements RestauranteRepositoryQueries {
 
         parametros.forEach((k, v) -> query.setParameter(k, v));
 
-        return query.getResultList();
+        return Optional.of(query.getResultList());
     }
 
     @Override
-    public List<Restaurante> find2(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
+    public Optional<List<Restaurante>> find2(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal) {
         CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
         CriteriaQuery<Restaurante> criteriaQuery = criteriaBuilder.createQuery(Restaurante.class);
 
@@ -87,12 +84,12 @@ public class RestauranteRepositoryImpl implements RestauranteRepositoryQueries {
 
         TypedQuery<Restaurante> query = entityManager.createQuery(criteriaQuery);
 
-        return query.getResultList();
+        return Optional.of(query.getResultList());
     }
 
     @Override
-    public List<Restaurante> findComFreteGratis(String nome) {
-        return restauranteRepository.findAll(RestauranteSpecs.comFreteGratis().and(RestauranteSpecs.comNomeSemelhante(nome)));
+    public Optional<List<Restaurante>> findComFreteGratis(String nome) {
+        return Optional.of(restauranteRepository.findAll(RestauranteSpecs.comFreteGratis().and(RestauranteSpecs.comNomeSemelhante(nome))));
     }
 
 }

@@ -1,7 +1,9 @@
 package com.algaworks.algafood.api.controller;
 
-import com.algaworks.algafood.domain.exception.EntityInUseException;
+import com.algaworks.algafood.api.exceptionhandler.Problem;
+import com.algaworks.algafood.domain.exception.BusinessException;
 import com.algaworks.algafood.domain.exception.EntityNotFoundException;
+import com.algaworks.algafood.domain.exception.EstadoNotFoundException;
 import com.algaworks.algafood.domain.model.Cidade;
 import com.algaworks.algafood.domain.repository.CidadeRepository;
 import com.algaworks.algafood.domain.service.CadastroCidadeService;
@@ -11,8 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -21,74 +23,47 @@ import java.util.UUID;
 public class CidadeController {
 
     private final CidadeRepository cidadeRepository;
-
     private final CadastroCidadeService cadastroCidadeService;
 
     @GetMapping
-    public ResponseEntity<List<Cidade>> listar() {
-        List<Cidade> cidadeLista = cidadeRepository.findAll();
-        return ResponseEntity.status(HttpStatus.OK).body(cidadeLista);
+    @ResponseStatus(HttpStatus.OK)
+    public List<Cidade> listar() {
+        return cidadeRepository.findAll();
     }
 
     @GetMapping("/{cidadeId}")
-    public ResponseEntity<Cidade> buscar(@PathVariable("cidadeId") UUID id) {
-        Optional<Cidade> cidade = cidadeRepository.findById(id);
-
-        if (cidade.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(cidade.get());
+    @ResponseStatus(HttpStatus.OK)
+    public Cidade buscar(@PathVariable("cidadeId") UUID id) {
+        return cadastroCidadeService.buscarOuFalhar(id);
     }
 
     @PostMapping
-    public ResponseEntity<?> adicionar(@RequestBody Cidade cidade) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public Cidade adicionar(@RequestBody Cidade cidade) {
         try {
-            Cidade cidadeNova = cadastroCidadeService.salvar(cidade);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(cidadeNova);
-
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return cadastroCidadeService.salvar(cidade);
+        } catch (EstadoNotFoundException e) {
+            throw new BusinessException(e.getMessage(), e);
         }
     }
 
     @PutMapping("/{cidadeId}")
-    public ResponseEntity<?> atualizar(@PathVariable("cidadeId") UUID id, @RequestBody Cidade cidade) {
+    public Cidade atualizar(@PathVariable("cidadeId") UUID id, @RequestBody Cidade cidade) {
         try {
+            Cidade cidadeAtual = cadastroCidadeService.buscarOuFalhar(id);
 
-            Optional<Cidade> cidadeAtual = cidadeRepository.findById(id);
+            BeanUtils.copyProperties(cidade, cidadeAtual, "id");
 
-            if (cidadeAtual.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            BeanUtils.copyProperties(cidade, cidadeAtual.get(), "id");
-
-            Cidade cidadeAtualizada = cadastroCidadeService.salvar(cidadeAtual.get());
-
-            return ResponseEntity.status(HttpStatus.OK).body(cidadeAtualizada);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return cadastroCidadeService.salvar(cidadeAtual);
+        } catch (EstadoNotFoundException e) {
+            throw new BusinessException(e.getMessage(), e);
         }
     }
 
     @DeleteMapping("/{cidadeId}")
-    public ResponseEntity<String> remover(@PathVariable("cidadeId") UUID id) {
-        try {
-            Optional<Cidade> cidadeAtual = cidadeRepository.findById(id);
-
-            if (cidadeAtual.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            cadastroCidadeService.excluir(id);
-
-            return ResponseEntity.noContent().build();
-
-        } catch (EntityInUseException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable("cidadeId") UUID id) {
+        cadastroCidadeService.excluir(id);
     }
 
 }

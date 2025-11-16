@@ -1,9 +1,8 @@
 package com.algaworks.algafood.domain.service;
 
-import com.algaworks.algafood.domain.exception.EntityNotFoundException;
+import com.algaworks.algafood.domain.exception.RestauranteNotFoundException;
 import com.algaworks.algafood.domain.model.Cozinha;
 import com.algaworks.algafood.domain.model.Restaurante;
-import com.algaworks.algafood.domain.repository.CozinhaRepository;
 import com.algaworks.algafood.domain.repository.RestauranteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,18 +14,21 @@ import java.util.UUID;
 public class CadastroRestauranteService {
 
     private final RestauranteRepository restauranteRepository;
-
-    private final CozinhaRepository cozinhaRepository;
+    private final CadastroCozinhaService cadastroCozinhaService;
 
     public Restaurante salvar(Restaurante restaurante) {
         UUID cozinhaId = restaurante.getCozinha().getId();
 
-        Cozinha cozinha = cozinhaRepository.findById(cozinhaId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Não existe um cadastro de cozinha com código %s", cozinhaId)));
+        Cozinha cozinha = cadastroCozinhaService.buscarOuFalhar(cozinhaId);
 
         restaurante.setCozinha(cozinha);
 
         return restauranteRepository.saveAndFlush(restaurante);
+    }
+
+    public Restaurante buscarOuFalhar(UUID id) {
+        return restauranteRepository.findById(id)
+                .orElseThrow(() -> new RestauranteNotFoundException(id));
     }
 
 }

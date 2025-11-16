@@ -1,6 +1,9 @@
 package com.algaworks.algafood.domain.service;
 
+import com.algaworks.algafood.domain.exception.CozinhaNotFoundException;
 import com.algaworks.algafood.domain.exception.EntityInUseException;
+import com.algaworks.algafood.domain.exception.EntityNotFoundException;
+import com.algaworks.algafood.domain.exception.ErrorMessages;
 import com.algaworks.algafood.domain.model.Cozinha;
 import com.algaworks.algafood.domain.repository.CozinhaRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +24,18 @@ public class CadastroCozinhaService {
 
     public void excluir(UUID id) {
         try {
+            buscarOuFalhar(id);
+
             cozinhaRepository.deleteById(id);
 
         } catch (DataIntegrityViolationException e) {
-            throw new EntityInUseException(String.format("Cozinha de código %s não pode ser removida, pois está em uso.", id));
+            throw new EntityInUseException(String.format(ErrorMessages.VALIDATION_ERROR_COZINHA_EM_USO, id));
         }
+    }
+
+    public Cozinha buscarOuFalhar(UUID id) {
+        return cozinhaRepository.findById(id)
+                .orElseThrow(() -> new CozinhaNotFoundException(id));
     }
 
 }

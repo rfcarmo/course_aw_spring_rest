@@ -1,6 +1,9 @@
 package com.algaworks.algafood.domain.service;
 
 import com.algaworks.algafood.domain.exception.EntityInUseException;
+import com.algaworks.algafood.domain.exception.EntityNotFoundException;
+import com.algaworks.algafood.domain.exception.ErrorMessages;
+import com.algaworks.algafood.domain.exception.EstadoNotFoundException;
 import com.algaworks.algafood.domain.model.Estado;
 import com.algaworks.algafood.domain.repository.EstadoRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,11 +24,18 @@ public class CadastroEstadoService {
 
     public void excluir(UUID id) {
         try {
+            buscarOuFalhar(id);
+
             estadoRepository.deleteById(id);
 
         } catch (DataIntegrityViolationException e) {
-            throw new EntityInUseException(String.format("Estado de id %s não pode ser removido, pois está em uso", id));
+            throw new EntityInUseException(String.format(ErrorMessages.VALIDATION_ERROR_ESTADO_EM_USO, id));
         }
+    }
+
+    public Estado buscarOuFalhar(UUID id) {
+        return estadoRepository.findById(id)
+                .orElseThrow(() -> new EstadoNotFoundException(id));
     }
 
 }

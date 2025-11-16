@@ -4,13 +4,14 @@ import com.algaworks.algafood.domain.model.Restaurante;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 public interface RestauranteRepositoryQueries {
 
-    List<Restaurante> find(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal);
+    Optional<List<Restaurante>> find(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal);
 
-    List<Restaurante> find2(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal);
+    Optional<List<Restaurante>> find2(String nome, BigDecimal taxaFreteInicial, BigDecimal taxaFreteFinal);
 
-    List<Restaurante> findComFreteGratis(String nome);
+    Optional<List<Restaurante>> findComFreteGratis(String nome);
 
 }

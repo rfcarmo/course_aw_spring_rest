@@ -17,18 +17,18 @@ public interface RestauranteRepository extends JpaRepository<Restaurante, UUID>,
     @Query("from Restaurante r join fetch r.cozinha left join fetch r.formasPagamento")
     List<Restaurante> findAll();
 
-    List<Restaurante> findByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);
+    Optional<List<Restaurante>> findByTaxaFreteBetween(BigDecimal taxaInicial, BigDecimal taxaFinal);
 
-    List<Restaurante> findByNomeContainingAndCozinhaId(String nome, UUID cozinhaId);
+    Optional<List<Restaurante>> findByNomeContainingAndCozinhaId(String nome, UUID cozinhaId);
 
     @Query("from Restaurante r where r.nome like %:nome% and r.cozinha.id = :id")
-    List<Restaurante> consultarPorNome(String nome, @Param("id") UUID cozinhaId);
+    Optional<List<Restaurante>> consultarPorNome(String nome, @Param("id") UUID cozinhaId);
 
-    List<Restaurante> consultarPorNome2(String nome, @Param("id") UUID cozinhaId);
+    Optional<List<Restaurante>> consultarPorNome2(String nome, @Param("id") UUID cozinhaId);
 
     Optional<Restaurante> findFirstByNomeContaining(String name);
 
-    List<Restaurante> findTop2ByNomeContaining(String name);
+    Optional<List<Restaurante>> findTop2ByNomeContaining(String name);
 
     int countByCozinhaId(UUID cozinhaId);
 
