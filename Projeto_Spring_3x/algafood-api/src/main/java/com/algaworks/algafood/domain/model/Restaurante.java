@@ -1,8 +1,12 @@
 package com.algaworks.algafood.domain.model;
 
+import com.algaworks.algafood.core.validation.Groups;
+import com.algaworks.algafood.core.validation.ValorZeroIncluiDesc;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
+import jakarta.validation.groups.ConvertGroup;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -10,15 +14,14 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.context.annotation.Lazy;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@ValorZeroIncluiDesc(valorField = "taxaFrete", descricaoField = "nome", descricaoObrigatoria = "Frete Grátis")
 @Entity
 @Getter
 @Setter
@@ -32,12 +35,22 @@ public class Restaurante {
     @UuidGenerator(style = UuidGenerator.Style.AUTO)
     private UUID id;
 
+    @NotNull
+    @NotEmpty
+    @NotBlank
     @Column(nullable = false)
     private String nome;
 
+    @NotNull
+//    @Multiplo(numero = 10)
+    @PositiveOrZero
+//    @TaxaFrete
     @Column(name = "taxa_frete", nullable = false)
     private BigDecimal taxaFrete;
 
+    @ConvertGroup(to = Groups.CozinhaId.class)
+    @NotNull
+    @Valid
     @ManyToOne
     @JoinColumn(name = "cozinha_id", nullable = false)
     private Cozinha cozinha;

@@ -3,6 +3,7 @@ package com.algaworks.algafood.api.controller;
 import com.algaworks.algafood.domain.model.Estado;
 import com.algaworks.algafood.domain.repository.EstadoRepository;
 import com.algaworks.algafood.domain.service.CadastroEstadoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -35,14 +36,14 @@ public class EstadoController {
     }
 
     @PostMapping
-    public ResponseEntity<Estado> adicionar(@RequestBody Estado estado) {
+    public ResponseEntity<Estado> adicionar(@RequestBody @Valid Estado estado) {
         Estado estadoNovo = cadastroEstadoService.salvar(estado);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(estadoNovo);
     }
 
     @PutMapping("/{estadoId}")
-    public ResponseEntity<Estado> atualizar(@PathVariable("estadoId") UUID id, @RequestBody Estado estado) {
+    public ResponseEntity<Estado> atualizar(@PathVariable("estadoId") UUID id, @RequestBody @Valid Estado estado) {
         Estado estadoAtual = cadastroEstadoService.buscarOuFalhar(id);
 
         BeanUtils.copyProperties(estado, estadoAtual, "id");

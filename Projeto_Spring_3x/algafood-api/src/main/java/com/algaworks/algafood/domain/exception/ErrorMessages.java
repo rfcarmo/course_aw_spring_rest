@@ -13,4 +13,6 @@ public class ErrorMessages {
     public static final String VALIDATION_ERROR_ESTADO_NAO_ENCONTRADO = "Estado de id %s não encontrado";
 
     public static final String VALIDATION_ERROR_RESTAURANTE_NAO_ENCONTRADO = "Restaurante com ID %s não encontrado";
+
+    public static final String MSG_ERROR_DADOS_INVALIDOS = "Um ou mais dados estão inválidos. Corrija e tente novamente.";
 }

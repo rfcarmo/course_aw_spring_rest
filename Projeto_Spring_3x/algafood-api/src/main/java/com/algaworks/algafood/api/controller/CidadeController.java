@@ -7,6 +7,7 @@ import com.algaworks.algafood.domain.exception.EstadoNotFoundException;
 import com.algaworks.algafood.domain.model.Cidade;
 import com.algaworks.algafood.domain.repository.CidadeRepository;
 import com.algaworks.algafood.domain.service.CadastroCidadeService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,7 @@ public class CidadeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Cidade adicionar(@RequestBody Cidade cidade) {
+    public Cidade adicionar(@RequestBody @Valid Cidade cidade) {
         try {
             return cadastroCidadeService.salvar(cidade);
         } catch (EstadoNotFoundException e) {
@@ -48,7 +49,7 @@ public class CidadeController {
     }
 
     @PutMapping("/{cidadeId}")
-    public Cidade atualizar(@PathVariable("cidadeId") UUID id, @RequestBody Cidade cidade) {
+    public Cidade atualizar(@PathVariable("cidadeId") UUID id, @RequestBody @Valid Cidade cidade) {
         try {
             Cidade cidadeAtual = cadastroCidadeService.buscarOuFalhar(id);
 

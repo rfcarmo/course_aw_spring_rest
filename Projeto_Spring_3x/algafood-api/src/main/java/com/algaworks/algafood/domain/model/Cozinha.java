@@ -1,7 +1,10 @@
 package com.algaworks.algafood.domain.model;
 
+import com.algaworks.algafood.core.validation.Groups;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 
@@ -16,12 +19,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class Cozinha {
 
+    @NotNull(groups = Groups.CozinhaId.class)
     @Id
     @EqualsAndHashCode.Include
     @GeneratedValue(generator = "UUID")
     @UuidGenerator(style = UuidGenerator.Style.AUTO)
     private UUID id;
 
+    @NotBlank
     @Column(nullable = false)
     private String nome;
 

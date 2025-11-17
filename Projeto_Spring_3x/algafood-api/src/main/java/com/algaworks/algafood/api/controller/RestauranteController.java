@@ -1,8 +1,8 @@
 package com.algaworks.algafood.api.controller;
 
+import com.algaworks.algafood.core.validation.ValidacaoException;
 import com.algaworks.algafood.domain.exception.BusinessException;
 import com.algaworks.algafood.domain.exception.CozinhaNotFoundException;
-import com.algaworks.algafood.domain.exception.EntityNotFoundException;
 import com.algaworks.algafood.domain.exception.RestauranteNotFoundException;
 import com.algaworks.algafood.domain.model.Restaurante;
 import com.algaworks.algafood.domain.repository.RestauranteRepository;
@@ -13,6 +13,7 @@ import com.algaworks.algafood.infrastructure.repository.spec.RestauranteSpecs;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.BeanUtils;
@@ -21,6 +22,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.SmartValidator;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.reflect.Field;
@@ -36,6 +39,7 @@ public class RestauranteController {
 
     private final RestauranteRepository restauranteRepository;
     private final CadastroRestauranteService cadastroRestauranteService;
+    private final SmartValidator validator;
 
     @GetMapping
     public ResponseEntity<List<Restaurante>> listar() {
@@ -147,7 +151,7 @@ public class RestauranteController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Restaurante adicionar(@RequestBody Restaurante restaurante) {
+    public Restaurante adicionar(@RequestBody @Valid Restaurante restaurante) {
         try {
             return cadastroRestauranteService.salvar(restaurante);
         } catch (CozinhaNotFoundException e) {
@@ -157,7 +161,7 @@ public class RestauranteController {
 
     @PutMapping("/{restauranteId}")
     @ResponseStatus(HttpStatus.OK)
-    public Restaurante atualizar(@PathVariable("restauranteId") UUID id, @RequestBody Restaurante restaurante) {
+    public Restaurante atualizar(@PathVariable("restauranteId") UUID id, @RequestBody @Valid Restaurante restaurante) {
         Restaurante restauranteAtual = cadastroRestauranteService.buscarOuFalhar(id);
 
         BeanUtils.copyProperties(restaurante, restauranteAtual, "id", "formasPagamento", "endereco", "dataCadastro", "produtos");
@@ -175,8 +179,19 @@ public class RestauranteController {
         Restaurante restauranteAtual = cadastroRestauranteService.buscarOuFalhar(id);
 
         merge(restaurante, restauranteAtual, request);
+        validate(restauranteAtual, "restaurante");
 
         return atualizar(id, restauranteAtual);
+    }
+
+    private void validate(Restaurante restaurante, String objectName) {
+        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(restaurante, objectName);
+
+        validator.validate(restaurante, bindingResult);
+
+        if (bindingResult.hasErrors()) {
+            throw new ValidacaoException(bindingResult);
+        }
     }
 
     private void merge(Map<String, Object> dadosOrigem, Restaurante restauranteDestino, HttpServletRequest request) {

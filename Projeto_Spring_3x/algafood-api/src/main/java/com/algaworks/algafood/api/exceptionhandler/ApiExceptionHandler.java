@@ -1,18 +1,26 @@
 package com.algaworks.algafood.api.exceptionhandler;
 
+import com.algaworks.algafood.core.validation.ValidacaoException;
 import com.algaworks.algafood.domain.exception.BusinessException;
 import com.algaworks.algafood.domain.exception.EntityInUseException;
 import com.algaworks.algafood.domain.exception.EntityNotFoundException;
+import com.algaworks.algafood.domain.exception.ErrorMessages;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -27,9 +35,12 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
+@RequiredArgsConstructor
 public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final String GENERIC_ERROR_MESSAGE = "Ocorreu um erro interno inesperado no sistema. Tente novamente e se o problema persistir, entre em contato com o administrador do sistema.";
+
+    private final MessageSource messageSource;
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<?> handleErroEntityNotFoundException(EntityNotFoundException e, WebRequest request) {
@@ -72,6 +83,43 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         Problem problem = createProblemBuilder(httpStatus, problemType, detail, detail).build();
 
         return handleExceptionInternal(ex, problem, new HttpHeaders(), httpStatus, request);
+    }
+
+    @ExceptionHandler({ ValidacaoException.class })
+    public ResponseEntity<Object> handleValidacaoException(ValidacaoException ex, WebRequest request) {
+        return handleValidationInternal(ex, ex.getBindingResult(), new HttpHeaders(),
+                HttpStatus.BAD_REQUEST, request);
+    }
+
+    private ResponseEntity<Object> handleValidationInternal(Exception ex, BindingResult bindingResult, HttpHeaders headers,
+                                                            HttpStatus status, WebRequest request) {
+
+        ProblemType problemType = ProblemType.DADOS_INVALIDOS;
+        String detail = "Um ou mais campos estão inválidos. Faça o preenchimento correto e tente novamente.";
+
+        List<Problem.Object> problemObjects = bindingResult.getAllErrors().stream()
+                .map(objectError -> {
+                    String message = messageSource.getMessage(objectError, LocaleContextHolder.getLocale());
+
+                    String name = objectError.getObjectName();
+
+                    if (objectError instanceof FieldError) {
+                        name = ((FieldError) objectError).getField();
+                    }
+
+                    return Problem.Object.builder()
+                            .name(name)
+                            .userMessage(message)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        Problem problem = createProblemBuilder(status, problemType, detail, detail)
+                .userMessage(detail)
+                .objects(problemObjects)
+                .build();
+
+        return handleExceptionInternal(ex, problem, headers, status, request);
     }
 
     // Override para tratar erros de JSON inválido na requisição
@@ -121,6 +169,13 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         Problem problem = createProblemBuilder(httpStatus, problemType, detail, detail).build();
 
         return handleExceptionInternal(ex, problem, headers, status, request);
+    }
+
+    // Override para tratar erros de validação de dados nas requisições
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        HttpStatus httpStatus = HttpStatus.valueOf(status.value());
+        return handleValidationInternal(ex, ex.getBindingResult(), headers, httpStatus, request);
     }
 
     @Override

@@ -5,6 +5,7 @@ import com.algaworks.algafood.domain.exception.ErrorMessages;
 import com.algaworks.algafood.domain.model.Cozinha;
 import com.algaworks.algafood.domain.repository.CozinhaRepository;
 import com.algaworks.algafood.domain.service.CadastroCozinhaService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
@@ -58,14 +59,14 @@ public class CozinhaController {
     }
 
     @PostMapping
-    public ResponseEntity<Cozinha> adicionar(@RequestBody Cozinha cozinha) {
+    public ResponseEntity<Cozinha> adicionar(@RequestBody @Valid Cozinha cozinha) {
         Cozinha cozinhaNova = cadastroCozinhaService.salvar(cozinha);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(cozinhaNova);
     }
 
     @PutMapping("/{cozinhaId}")
-    public ResponseEntity<Cozinha> atualizar(@PathVariable("cozinhaId") UUID id, @RequestBody Cozinha cozinha) {
+    public ResponseEntity<Cozinha> atualizar(@PathVariable("cozinhaId") UUID id, @RequestBody @Valid Cozinha cozinha) {
         Cozinha cozinhaAtual = cadastroCozinhaService.buscarOuFalhar(id);
 
         BeanUtils.copyProperties(cozinha, cozinhaAtual, "id");
