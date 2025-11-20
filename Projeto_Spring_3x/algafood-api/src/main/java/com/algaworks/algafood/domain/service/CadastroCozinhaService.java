@@ -2,7 +2,6 @@ package com.algaworks.algafood.domain.service;
 
 import com.algaworks.algafood.domain.exception.CozinhaNotFoundException;
 import com.algaworks.algafood.domain.exception.EntityInUseException;
-import com.algaworks.algafood.domain.exception.EntityNotFoundException;
 import com.algaworks.algafood.domain.exception.ErrorMessages;
 import com.algaworks.algafood.domain.model.Cozinha;
 import com.algaworks.algafood.domain.repository.CozinhaRepository;
