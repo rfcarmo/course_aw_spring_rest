@@ -3,6 +3,7 @@ package com.algaworks.algafood.domain.model;
 import com.algaworks.algafood.core.validation.Groups;
 import com.algaworks.algafood.core.validation.ValorZeroIncluiDesc;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
@@ -48,6 +49,7 @@ public class Restaurante {
     @Column(name = "taxa_frete", nullable = false)
     private BigDecimal taxaFrete;
 
+    @JsonIgnoreProperties(value = "nome", allowGetters = true)
     @ConvertGroup(to = Groups.CozinhaId.class)
     @NotNull
     @Valid
@@ -66,12 +68,12 @@ public class Restaurante {
     @Embedded
     private Endereco endereco;
 
-    @JsonIgnore
+    //@JsonIgnore
     @CreationTimestamp
     @Column(nullable = false)
     private OffsetDateTime dataCadastro;
 
-    @JsonIgnore
+    //@JsonIgnore
     @UpdateTimestamp
     @Column(nullable = false)
     private OffsetDateTime dataAtualizacao;
