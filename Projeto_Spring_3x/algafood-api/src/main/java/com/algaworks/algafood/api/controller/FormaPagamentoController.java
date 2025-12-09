@@ -1,17 +1,18 @@
 package com.algaworks.algafood.api.controller;
 
-import com.algaworks.algafood.domain.exception.EntityInUseException;
+import com.algaworks.algafood.api.assembler.FormaPagamentoModelAssembler;
+import com.algaworks.algafood.api.assembler.FormaPagamentoInputDisassembler;
 import com.algaworks.algafood.domain.model.FormaPagamento;
+import com.algaworks.algafood.domain.model.dto.input.FormaPagamentoInput;
+import com.algaworks.algafood.domain.model.dto.output.FormaPagamentoModel;
 import com.algaworks.algafood.domain.repository.FormaPagamentoRepository;
 import com.algaworks.algafood.domain.service.CadastroFormaPagamentoService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -20,63 +21,46 @@ import java.util.UUID;
 public class FormaPagamentoController {
 
     private final FormaPagamentoRepository formaPagamentoRepository;
-
     private final CadastroFormaPagamentoService cadastroFormaPagamentoService;
+    private final FormaPagamentoModelAssembler formaPagamentoModelAssembler;
+    private final FormaPagamentoInputDisassembler formaPagamentoInputDisassembler;
 
     @GetMapping
-    public ResponseEntity<List<FormaPagamento>> listar() {
-        List<FormaPagamento> formaPagamentos = formaPagamentoRepository.findAll();
+    public ResponseEntity<List<FormaPagamentoModel>> listar() {
+        List<FormaPagamentoModel> formaPagamentos = formaPagamentoModelAssembler.toCollectionModel(formaPagamentoRepository.findAll());
         return ResponseEntity.status(HttpStatus.OK).body(formaPagamentos);
     }
 
     @GetMapping("/{formaPagamentoId}")
-    public ResponseEntity<FormaPagamento> buscar(@PathVariable("formaPagamentoId")UUID id) {
-        Optional<FormaPagamento> formaPagamento = formaPagamentoRepository.findById(id);
+    public ResponseEntity<FormaPagamentoModel> buscar(@PathVariable("formaPagamentoId") UUID id) {
+        FormaPagamentoModel formaPagamento = formaPagamentoModelAssembler.toModel(cadastroFormaPagamentoService.buscarOuFalhar(id));
 
-        if (formaPagamento.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.status(HttpStatus.OK).body(formaPagamento.get());
+        return ResponseEntity.status(HttpStatus.OK).body(formaPagamento);
     }
 
     @PostMapping
-    public ResponseEntity<FormaPagamento> adicionar(@RequestBody FormaPagamento formaPagamento) {
-        FormaPagamento formaPagamentoNova = cadastroFormaPagamentoService.salvar(formaPagamento);
+    public ResponseEntity<FormaPagamentoModel> adicionar(@RequestBody FormaPagamentoInput formaPagamentoInput) {
+        FormaPagamento formaPagamento = formaPagamentoInputDisassembler.toDomainObject(formaPagamentoInput);
+        FormaPagamentoModel formaPagamentoNova = formaPagamentoModelAssembler.toModel(cadastroFormaPagamentoService.salvar(formaPagamento));
         return ResponseEntity.status(HttpStatus.CREATED).body(formaPagamentoNova);
     }
 
     @PutMapping("/{formaPagamentoId}")
-    public ResponseEntity<?> atualizar(@PathVariable("formaPagamentoId") UUID id, @RequestBody FormaPagamento formaPagamento) {
-        Optional<FormaPagamento> formaPagamentoAtual = formaPagamentoRepository.findById(id);
+    public ResponseEntity<FormaPagamentoModel> atualizar(@PathVariable("formaPagamentoId") UUID id, @RequestBody FormaPagamentoInput formaPagamentoInput) {
+        FormaPagamento formaPagamentoAtual = cadastroFormaPagamentoService.buscarOuFalhar(id);
 
-        if (formaPagamentoAtual.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+//        BeanUtils.copyProperties(formaPagamento, formaPagamentoAtual.get(), "id");
+        formaPagamentoInputDisassembler.copyToDomainObject(formaPagamentoInput, formaPagamentoAtual);
 
-        BeanUtils.copyProperties(formaPagamento, formaPagamentoAtual.get(), "id");
-
-        FormaPagamento formaPagamentoAtualizada = cadastroFormaPagamentoService.salvar(formaPagamentoAtual.get());
+        FormaPagamentoModel formaPagamentoAtualizada = formaPagamentoModelAssembler.toModel(cadastroFormaPagamentoService.salvar(formaPagamentoAtual));
 
         return ResponseEntity.status(HttpStatus.OK).body(formaPagamentoAtualizada);
     }
 
     @DeleteMapping("/{formaPagamentoId}")
-    public ResponseEntity<String> remover(@PathVariable("formaPagamentoId")UUID id) {
-        try {
-            Optional<FormaPagamento> formaPagamento = formaPagamentoRepository.findById(id);
-
-            if (formaPagamento.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            cadastroFormaPagamentoService.excluir(id);
-
-            return ResponseEntity.noContent().build();
-
-        } catch (EntityInUseException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
-        }
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void remover(@PathVariable("formaPagamentoId") UUID id) {
+        cadastroFormaPagamentoService.excluir(id);
 
     }
 

@@ -1,0 +1,28 @@
+package com.algaworks.algafood.api.assembler;
+
+import com.algaworks.algafood.domain.model.Usuario;
+import com.algaworks.algafood.domain.model.dto.output.UsuarioModel;
+import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+public class UsuarioModelAssembler {
+
+    private final ModelMapper modelMapper;
+
+    public UsuarioModel toModel(Usuario usuario) {
+        return modelMapper.map(usuario, UsuarioModel.class);
+    }
+
+    public List<UsuarioModel> toCollectionModel(Collection<Usuario> usuarios) {
+        return usuarios.stream()
+                .map(this::toModel)
+                .toList();
+    }
+
+}

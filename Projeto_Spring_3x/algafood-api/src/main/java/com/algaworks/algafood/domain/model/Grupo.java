@@ -33,4 +33,12 @@ public class Grupo {
     )
     private List<Permissao> permissoes;
 
+    public void adicionarPermissao(Permissao permissao) {
+        this.getPermissoes().add(permissao);
+    }
+
+    public void removerPermissao(Permissao permissao) {
+        this.getPermissoes().remove(permissao);
+    }
+
 }

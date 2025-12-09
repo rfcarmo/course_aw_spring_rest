@@ -1,6 +1,7 @@
 package com.algaworks.algafood.domain.service;
 
 import com.algaworks.algafood.domain.exception.EntityInUseException;
+import com.algaworks.algafood.domain.exception.PermissaoNotFoundException;
 import com.algaworks.algafood.domain.model.Permissao;
 import com.algaworks.algafood.domain.repository.PermissaoRepository;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,11 @@ public class CadastroPermissaoService {
         } catch (DataIntegrityViolationException e) {
             throw new EntityInUseException(String.format("Permissão de código %s não pode ser removida, pois está em uso", id));
         }
+    }
+
+    public Permissao buscarOuFalhar(UUID id) {
+        return permissaoRepository.findById(id)
+                .orElseThrow(() -> new PermissaoNotFoundException(id));
     }
 
 }

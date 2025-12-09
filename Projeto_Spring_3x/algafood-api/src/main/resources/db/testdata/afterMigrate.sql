@@ -1,3 +1,6 @@
+delete from item_pedido;
+delete from pedido;
+delete from restaurante_usuario_responsavel;
 delete from usuario_grupo;
 delete from grupo_permissao;
 delete from restaurante_forma_pagamento;
@@ -28,17 +31,38 @@ insert into forma_pagamento (id, descricao) values ('a3e942b1-3f45-4125-9ccf-73e
 insert into permissao (id, nome, descricao) values ('a4d593c7-84c9-4005-94f5-02a4af238dcf', 'CONSULTAR_COZINHAS', 'Permite consultar cozinhas');
 insert into permissao (id, nome, descricao) values ('cc07244d-ecc0-4f68-88a5-ca7a0741c4e4', 'EDITAR_COZINHAS', 'Permite editar cozinhas');
 
+insert into grupo (id, nome) values ('2c8f4317-eb7e-48f1-b89e-9d7eb0f57cff', 'Gerente');
+insert into grupo (id, nome) values ('ad6f8f26-dbc6-41af-83cd-785045005de3', 'Vendedor');
+insert into grupo (id, nome) values ('6880ec9c-6727-4b4c-9269-dc8f49ae3ea6', 'Secretária');
+insert into grupo (id, nome) values ('191433a6-3d2d-4f89-acae-f5f61e4c1794', 'Cadastrador');
+
+insert into usuario (id, nome, email, senha, data_cadastro) values ('bc94e54a-a3ff-4f04-a9f6-3ae9cae216aa', 'João da Silva', 'joao.ger@algafood.com', '123', current_timestamp at time zone 'utc');
+insert into usuario (id, nome, email, senha, data_cadastro) values ('5ba4300a-c2a4-4ef7-a99e-c6959289e9c0', 'Maria Joaquina', 'maria.vnd@algafood.com', '123', current_timestamp at time zone 'utc');
+insert into usuario (id, nome, email, senha, data_cadastro) values ('2a43ea5c-df4d-48de-9aaa-5f07d411ad26', 'José Souza', 'jose.aux@algafood.com', '123', current_timestamp at time zone 'utc');
+insert into usuario (id, nome, email, senha, data_cadastro) values ('247a8320-4691-44af-939b-593908e7d05e', 'Sebastião Martins', 'sebastiao.cad@algafood.com', '123', current_timestamp at time zone 'utc');
+insert into usuario (id, nome, email, senha, data_cadastro) values ('f40898bf-e27a-4b61-804a-26836e10030e', 'Manoel Lima', 'manoel.loja@gmail.com', '123', current_timestamp at time zone 'utc');
+
+insert into usuario_grupo (usuario_id, grupo_id) values ('bc94e54a-a3ff-4f04-a9f6-3ae9cae216aa', '2c8f4317-eb7e-48f1-b89e-9d7eb0f57cff');
+insert into usuario_grupo (usuario_id, grupo_id) values ('bc94e54a-a3ff-4f04-a9f6-3ae9cae216aa', 'ad6f8f26-dbc6-41af-83cd-785045005de3');
+insert into usuario_grupo (usuario_id, grupo_id) values ('5ba4300a-c2a4-4ef7-a99e-c6959289e9c0', 'ad6f8f26-dbc6-41af-83cd-785045005de3');
+
+insert into grupo_permissao (grupo_id, permissao_id) values ('2c8f4317-eb7e-48f1-b89e-9d7eb0f57cff', 'a4d593c7-84c9-4005-94f5-02a4af238dcf');
+insert into grupo_permissao (grupo_id, permissao_id) values ('2c8f4317-eb7e-48f1-b89e-9d7eb0f57cff', 'cc07244d-ecc0-4f68-88a5-ca7a0741c4e4');
+insert into grupo_permissao (grupo_id, permissao_id) values ('ad6f8f26-dbc6-41af-83cd-785045005de3', 'a4d593c7-84c9-4005-94f5-02a4af238dcf');
+insert into grupo_permissao (grupo_id, permissao_id) values ('ad6f8f26-dbc6-41af-83cd-785045005de3', 'cc07244d-ecc0-4f68-88a5-ca7a0741c4e4');
+insert into grupo_permissao (grupo_id, permissao_id) values ('6880ec9c-6727-4b4c-9269-dc8f49ae3ea6', 'a4d593c7-84c9-4005-94f5-02a4af238dcf');
+
 insert into cozinha (id, nome) values ('5776008f-ad3f-409b-8ce9-7b1c3e16defb', 'Italiana');
 insert into cozinha (id, nome) values ('6e3e80ed-1757-4263-9855-e4fe5173930d', 'Portuguesa');
 insert into cozinha (id, nome) values ('5fbf1884-9959-4268-92dd-66a745cac923', 'Argentina');
 insert into cozinha (id, nome) values ('fa6e19ce-6106-46c0-9270-4407eec84cac', 'Brasileira');
 
-insert into restaurante (id, nome, taxa_frete, cozinha_id, endereco_cidade_id, endereco_cep, endereco_logradouro, endereco_numero, endereco_bairro, data_cadastro, data_atualizacao) values ('dcb70328-416b-4fa0-8bf8-407911225cfe', 'Abbraccio', 10, '5776008f-ad3f-409b-8ce9-7b1c3e16defb', '20dbab67-8f81-4586-8aa0-9894ba3e69f7', '14600-000', 'Rua Alfa', '123', 'Sacomã', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
-insert into restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao) values ('bbad22e6-bb94-4d46-b81a-e35fe8009501', 'Amico', 9.50, '5776008f-ad3f-409b-8ce9-7b1c3e16defb', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
-insert into restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao) values ('4779e2ba-c3c4-4906-b97e-a05b7048e25c', 'Brasão', 15, '6e3e80ed-1757-4263-9855-e4fe5173930d', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
-insert into restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao) values ('f5b04b97-efe2-4ca3-97a2-fdd90232041e', 'Java Steakhouse', 12, '5fbf1884-9959-4268-92dd-66a745cac923', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
-insert into restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao) values ('f6e57d93-b50c-487d-9dc7-de8f16f6cf2e', 'Lanchonete do Tio Sam', 11, 'fa6e19ce-6106-46c0-9270-4407eec84cac', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
-insert into restaurante (id, nome, taxa_frete, cozinha_id, data_cadastro, data_atualizacao) values ('5ca62b7d-63e9-497b-9d7c-a179fcb63e9e', 'Bar da Maria', 6, 'fa6e19ce-6106-46c0-9270-4407eec84cac', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
+insert into restaurante (id, nome, taxa_frete, cozinha_id, ativo, aberto, endereco_cidade_id, endereco_cep, endereco_logradouro, endereco_numero, endereco_bairro, data_cadastro, data_atualizacao) values ('dcb70328-416b-4fa0-8bf8-407911225cfe', 'Abbraccio', 10, '5776008f-ad3f-409b-8ce9-7b1c3e16defb', true, true, '20dbab67-8f81-4586-8aa0-9894ba3e69f7', '14600-000', 'Rua Alfa', '123', 'Sacomã', current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
+insert into restaurante (id, nome, taxa_frete, cozinha_id, ativo, aberto, data_cadastro, data_atualizacao) values ('bbad22e6-bb94-4d46-b81a-e35fe8009501', 'Amico', 9.50, '5776008f-ad3f-409b-8ce9-7b1c3e16defb', true, true, current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
+insert into restaurante (id, nome, taxa_frete, cozinha_id, ativo, aberto, data_cadastro, data_atualizacao) values ('4779e2ba-c3c4-4906-b97e-a05b7048e25c', 'Brasão', 15, '6e3e80ed-1757-4263-9855-e4fe5173930d', true, true, current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
+insert into restaurante (id, nome, taxa_frete, cozinha_id, ativo, aberto, data_cadastro, data_atualizacao) values ('f5b04b97-efe2-4ca3-97a2-fdd90232041e', 'Java Steakhouse', 12, '5fbf1884-9959-4268-92dd-66a745cac923', true, true, current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
+insert into restaurante (id, nome, taxa_frete, cozinha_id, ativo, aberto, data_cadastro, data_atualizacao) values ('f6e57d93-b50c-487d-9dc7-de8f16f6cf2e', 'Lanchonete do Tio Sam', 11, 'fa6e19ce-6106-46c0-9270-4407eec84cac', true, true, current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
+insert into restaurante (id, nome, taxa_frete, cozinha_id, ativo, aberto, data_cadastro, data_atualizacao) values ('5ca62b7d-63e9-497b-9d7c-a179fcb63e9e', 'Bar da Maria', 6, 'fa6e19ce-6106-46c0-9270-4407eec84cac', true, true, current_timestamp at time zone 'utc', current_timestamp at time zone 'utc');
 
 insert into produto (id, nome, descricao, preco, ativo, restaurante_id) values ('f6b126c9-9260-46f4-8de0-eb5d8f6dace1', 'Gnocchi ao Pesto', 'Deliciosa massa com molho pesto', 78.90, true, 'dcb70328-416b-4fa0-8bf8-407911225cfe');
 insert into produto (id, nome, descricao, preco, ativo, restaurante_id) values ('4910d63a-ab39-47be-a955-1967d61edded', 'Risoto Camarão', '16 camarões grandes nesse maravilhoso risoto', 110, true, 'dcb70328-416b-4fa0-8bf8-407911225cfe');
@@ -62,3 +86,15 @@ insert into restaurante_forma_pagamento (restaurante_id, forma_pagamento_id) val
 insert into restaurante_forma_pagamento (restaurante_id, forma_pagamento_id) values ('f6e57d93-b50c-487d-9dc7-de8f16f6cf2e', 'b61928f0-8efc-4168-a498-88c7927e0652');
 insert into restaurante_forma_pagamento (restaurante_id, forma_pagamento_id) values ('f6e57d93-b50c-487d-9dc7-de8f16f6cf2e', 'a3e942b1-3f45-4125-9ccf-73ecb31bedf1');
 insert into restaurante_forma_pagamento (restaurante_id, forma_pagamento_id) values ('5ca62b7d-63e9-497b-9d7c-a179fcb63e9e', 'a3e942b1-3f45-4125-9ccf-73ecb31bedf1');
+
+insert into restaurante_usuario_responsavel (restaurante_id, usuario_id) values ('dcb70328-416b-4fa0-8bf8-407911225cfe', 'f40898bf-e27a-4b61-804a-26836e10030e');
+insert into restaurante_usuario_responsavel (restaurante_id, usuario_id) values ('4779e2ba-c3c4-4906-b97e-a05b7048e25c', 'f40898bf-e27a-4b61-804a-26836e10030e');
+
+insert into pedido (id, restaurante_id, usuario_cliente_id, forma_pagamento_id, endereco_cidade_id, endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento, endereco_bairro, status, data_criacao, subtotal, taxa_frete, valor_total) values ('beb2e388-d691-4493-a8a3-2576e07f0943', 'dcb70328-416b-4fa0-8bf8-407911225cfe', '5ba4300a-c2a4-4ef7-a99e-c6959289e9c0', '892186d5-d165-4f33-b837-cee11db7b127', '20dbab67-8f81-4586-8aa0-9894ba3e69f7', '38400-000', 'Rua Floriano Peixoto', '500', 'Apto 801', 'Brasil', 'CRIADO', current_timestamp at time zone 'utc', 298.90, 10, 308.90);
+
+insert into item_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, preco_total, observacao) values ('3f5142ad-9a13-407f-8f8b-7dea4812a2fd', 'beb2e388-d691-4493-a8a3-2576e07f0943', 'f6b126c9-9260-46f4-8de0-eb5d8f6dace1', 1, 78.9, 78.9, null);
+insert into item_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, preco_total, observacao) values ('fa41bd06-91cf-41b6-a477-a621acae2355', 'beb2e388-d691-4493-a8a3-2576e07f0943', '4910d63a-ab39-47be-a955-1967d61edded', 2, 110, 220, 'Menos picante, por favor');
+
+insert into pedido (id, restaurante_id, usuario_cliente_id, forma_pagamento_id, endereco_cidade_id, endereco_cep, endereco_logradouro, endereco_numero, endereco_complemento, endereco_bairro, status, data_criacao, subtotal, taxa_frete, valor_total) values ('7114eb4c-c574-4d93-aa15-1f8cdc4db7fb', 'f5b04b97-efe2-4ca3-97a2-fdd90232041e', '247a8320-4691-44af-939b-593908e7d05e', 'b61928f0-8efc-4168-a498-88c7927e0652', '20dbab67-8f81-4586-8aa0-9894ba3e69f7', '38400-111', 'Rua Acre', '300', 'Casa 2', 'Centro', 'CRIADO', current_timestamp at time zone 'utc', 79, 0, 79);
+
+insert into item_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, preco_total, observacao) values ('12aaba18-7e79-4f45-a5a1-d37775a93955', '7114eb4c-c574-4d93-aa15-1f8cdc4db7fb', '7b8a3770-c67b-4e28-9008-efd109394b9f', 1, 79, 79, 'Ao ponto');

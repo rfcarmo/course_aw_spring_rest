@@ -4,6 +4,7 @@ import com.algaworks.algafood.api.assembler.RestauranteInputDisassembler;
 import com.algaworks.algafood.api.assembler.RestauranteModelAssembler;
 import com.algaworks.algafood.core.validation.ValidacaoException;
 import com.algaworks.algafood.domain.exception.BusinessException;
+import com.algaworks.algafood.domain.exception.CidadeNotFoundException;
 import com.algaworks.algafood.domain.exception.CozinhaNotFoundException;
 import com.algaworks.algafood.domain.exception.RestauranteNotFoundException;
 import com.algaworks.algafood.domain.model.Restaurante;
@@ -20,7 +21,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -165,7 +165,7 @@ public class RestauranteController {
             Restaurante restaurante = restauranteInputDisassembler.toDomainObject(restauranteInput);
 
             return restauranteModelAssembler.toModel(cadastroRestauranteService.salvar(restaurante));
-        } catch (CozinhaNotFoundException e) {
+        } catch (CozinhaNotFoundException | CidadeNotFoundException e) {
             throw new BusinessException(e.getMessage(), e);
         }
     }
@@ -181,7 +181,7 @@ public class RestauranteController {
 
         try {
             return restauranteModelAssembler.toModel(cadastroRestauranteService.salvar(restauranteAtual));
-        } catch (CozinhaNotFoundException e) {
+        } catch (CozinhaNotFoundException | CidadeNotFoundException e) {
             throw new BusinessException(e.getMessage(), e);
         }
     }
@@ -197,6 +197,50 @@ public class RestauranteController {
         try {
             return restauranteModelAssembler.toModel(cadastroRestauranteService.salvar(restauranteAtual));
         } catch (CozinhaNotFoundException e) {
+            throw new BusinessException(e.getMessage(), e);
+        }
+    }
+
+    @PutMapping("/{restauranteId}/ativo")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ativar(@PathVariable("restauranteId") UUID id) {
+        cadastroRestauranteService.ativar(id);
+    }
+
+    @DeleteMapping("/{restauranteId}/ativo")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void inativar(@PathVariable("restauranteId") UUID id) {
+        cadastroRestauranteService.inativar(id);
+    }
+
+    @PutMapping("/{restauranteId}/abertura")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void abertura(@PathVariable("restauranteId") UUID id) {
+        cadastroRestauranteService.abrir(id);
+    }
+
+    @PutMapping("/{restauranteId}/fechamento")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void fechamento(@PathVariable("restauranteId") UUID id) {
+        cadastroRestauranteService.fechar(id);
+    }
+
+    @PutMapping("/ativacoes")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void ativarMultiplos(@RequestBody List<UUID> ids) {
+        try {
+            cadastroRestauranteService.ativar(ids);
+        } catch (RestauranteNotFoundException e) {
+            throw new BusinessException(e.getMessage(), e);
+        }
+    }
+
+    @DeleteMapping("/ativacoes")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void inativarMultiplos(@RequestBody List<UUID> ids) {
+        try {
+            cadastroRestauranteService.inativar(ids);
+        } catch (RestauranteNotFoundException e) {
             throw new BusinessException(e.getMessage(), e);
         }
     }
